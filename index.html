@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Manutenção</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #0F172A;
+      margin: 0;
+      padding: 20px;
+      color: white;
+    }
+
+    .container {
+      max-width: 440px;
+      margin: auto;
+    }
+
+    .card {
+      background: #1E293B;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 1 10px 25px rgba(0, 0, 0, 0.3);
+      margin-bottom: 16px;
+    }
+
+    h2 {
+      text-align: center;
+      margin: 0 0 20px;
+    }
+
+    h3 {
+      margin: 0 0 14px;
+    }
+
+    .item {
+      margin: 10px 0;
+      font-size: 16px;
+    }
+
+    .label {
+      font-weight: bold;
+      color: #94A3B8;
+    }
+
+    .status {
+      font-weight: bold;
+      font-size: 18px;
+    }
+
+    .ok {
+      color: #10B981;
+    }
+
+    .vencido {
+      color: #EF4444;
+    }
+
+    .vencendo {
+      color: #F59E0B;
+    }
+
+    .erro {
+      text-align: center;
+      color: #EF4444;
+      font-size: 18px;
+    }
+
+    .form-group {
+      margin-bottom: 12px;
+    }
+
+    .form-group label {
+      display: block;
+      color: #CBD5E1;
+      font-size: 13px;
+      font-weight: bold;
+      margin-bottom: 6px;
+    }
+
+    input,
+    textarea {
+      width: 100%;
+      box-sizing: border-box;
+      border: 1px solid #334155;
+      background: #0F172A;
+      color: white;
+      border-radius: 8px;
+      padding: 11px 12px;
+      font-size: 15px;
+      outline: none;
+    }
+
+    textarea {
+      min-height: 96px;
+      resize: vertical;
+    }
+
+    input:focus,
+    textarea:focus {
+      border-color: #38BDF8;
+    }
+
+    button {
+      width: 100%;
+      border: none;
+      border-radius: 8px;
+      background: #2563EB;
+      color: white;
+      padding: 12px;
+      font-size: 15px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    button:disabled {
+      background: #475569;
+      cursor: not-allowed;
+    }
+
+    .mensagem {
+      display: none;
+      border-radius: 8px;
+      padding: 12px;
+      margin-top: 12px;
+      font-size: 14px;
+    }
+
+    .mensagem.sucesso {
+      display: block;
+      background: rgba(16, 185, 129, 0.16);
+      color: #6EE7B7;
+    }
+
+    .mensagem.falha {
+      display: block;
+      background: rgba(239, 68, 68, 0.16);
+      color: #FCA5A5;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="card">
+      <h2>Status do Equipamento</h2>
+
+      <div class="item">
+        <span class="label">Cliente:</span>
+        <span id="cliente">...</span>
+      </div>
+
+      <div class="item">
+        <span class="label">Equipamento:</span>
+        <span id="equipamento">...</span>
+      </div>
+
+      <div class="item">
+        <span class="label">Local:</span>
+        <span id="local">...</span>
+      </div>
+
+      <div class="item">
+        <span class="label">Última Manutenção:</span>
+        <span id="ultima">...</span>
+      </div>
+
+      <div class="item">
+        <span class="label">Próxima Manutenção:</span>
+        <span id="proxima">...</span>
+      </div>
+
+      <div class="item">
+        <span class="label">Status:</span>
+        <span id="status" class="status">...</span>
+      </div>
+    </div>
+
+    <div class="card" id="cardChamado" style="display:none;">
+      <h3>Abrir chamado técnico</h3>
+
+      <form id="formChamado">
+        <div class="form-group">
+          <label for="solicitante">Seu nome</label>
+          <input id="solicitante" type="text" autocomplete="name" required>
+        </div>
+
+        <div class="form-group">
+          <label for="telefone">Telefone ou WhatsApp</label>
+          <input id="telefone" type="tel" autocomplete="tel" required>
+        </div>
+
+        <div class="form-group">
+          <label for="descricao">Descreva o problema</label>
+          <textarea id="descricao" required placeholder="Ex: equipamento não liga, vazamento, barulho..."></textarea>
+        </div>
+
+        <button id="btnChamado" type="submit">Enviar chamado</button>
+        <div id="msgChamado" class="mensagem"></div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    // ==========================
+    // CONFIG
+    // ==========================
+    const SUPABASE_URL = "https://jwenrixwuqffhjllscei.supabase.co";
+    const API_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp3ZW5yaXh3dXFmZmhqbGxzY2VpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5MTE2NDQsImV4cCI6MjA5NDQ4NzY0NH0.xtuQVhjwkJd8GBWQ_qBc-334C88kmeDcP9zcAar-Ir0";
+
+    // ==========================
+    // PEGAR ID DA URL
+    // ==========================
+    const params = new URLSearchParams(window.location.search);
+    const id = params.get("id");
+    let manutencaoAtual = null;
+
+    if (!id) {
+      document.body.innerHTML = "<h2 class='erro'>ID não informado na URL</h2>";
+      throw new Error("ID não informado");
+    }
+
+    // ==========================
+    // FORMATAR DATA
+    // ==========================
+    function formatarData(dataISO) {
+      if (!dataISO) return "-";
+
+      try {
+        const dataLimpa = dataISO.split("T")[0];
+        const partes = dataLimpa.split("-");
+        if (partes.length !== 3) {
+          return dataISO;
+        }
+        return `${partes[2]}/${partes[1]}/${partes[0]}`;
+      } catch {
+        return dataISO;
+      }
+    }
+
+    function headersSupabase(extra = {}) {
+      return {
+        "apikey": API_KEY,
+        "Authorization": `Bearer ${API_KEY}`,
+        "Content-Type": "application/json",
+        ...extra
+      };
+    }
+
+    function mostrarMensagem(tipo, texto) {
+      const msg = document.getElementById("msgChamado");
+      msg.className = `mensagem ${tipo}`;
+      msg.innerText = texto;
+    }
+
+    function valorSeguro(valor) {
+      return valor || "-";
+    }
+
+    // ==========================
+    // BUSCAR DADOS
+    // ==========================
+    async function carregarDados() {
+      try {
+        const resposta = await fetch(
+          `${SUPABASE_URL}/rest/v1/manutencao?id=eq.${id}&select=*`,
+          {
+            headers: headersSupabase()
+          }
+        );
+
+        // ==========================
+        // ERRO HTTP
+        // ==========================
+        if (!resposta.ok) {
+          const erroTexto = await resposta.text();
+          console.error(erroTexto);
+          document.body.innerHTML = "<h2 class='erro'>Erro ao consultar Supabase</h2>";
+          return;
+        }
+
+        const dados = await resposta.json();
+        console.log("Dados recebidos:", dados);
+
+        // ==========================
+        // NÃO ENCONTROU
+        // ==========================
+        if (!dados || dados.length === 0) {
+          document.body.innerHTML = "<h2 class='erro'>Manutenção não encontrada</h2>";
+          return;
+        }
+
+        // ==========================
+        // PEGAR PRIMEIRO ITEM
+        // ==========================
+        const data = dados[0];
+        manutencaoAtual = data;
+
+        // ==========================
+        // CAMPOS
+        // ==========================
+        const cliente = data.cliente || "-";
+        const local = data.local || "-";
+        const equipamento = data.equipamento || "-";
+        const dataManutencao = data.data_manutencao || data.dataManutencao || "";
+        const proximaManutencao = data.proxima_manutencao || data.proximaManutencao || "";
+
+        // ==========================
+        // MOSTRAR NA TELA
+        // ==========================
+        document.getElementById("cliente").innerText = cliente;
+        document.getElementById("local").innerText = local;
+        document.getElementById("equipamento").innerText = equipamento;
+        document.getElementById("ultima").innerText = formatarData(dataManutencao);
+        document.getElementById("proxima").innerText = formatarData(proximaManutencao);
+        document.getElementById("cardChamado").style.display = "block";
+
+        // ==========================
+        // STATUS
+        // ==========================
+        const statusEl = document.getElementById("status");
+        statusEl.classList.remove("ok", "vencido", "vencendo");
+
+        // ==========================
+        // SEM DATA
+        // ==========================
+        if (!proximaManutencao) {
+          statusEl.innerText = (data.status || "PENDENTE").toUpperCase();
+          statusEl.classList.add("vencendo");
+          return;
+        }
+
+        // ==========================
+        // DATA ATUAL
+        // ==========================
+        const hoje = new Date();
+        hoje.setHours(0, 0, 0, 0);
+
+        // ==========================
+        // CONVERTER DATA
+        // ==========================
+        const partesData = proximaManutencao.split("T")[0].split("-");
+        if (partesData.length !== 3) {
+          statusEl.innerText = (data.status || "EM DIA").toUpperCase();
+          statusEl.classList.add("ok");
+          return;
+        }
+
+        const ano = parseInt(partesData[0]);
+        const mes = parseInt(partesData[1]) - 1;
+        const dia = parseInt(partesData[2]);
+        const dataAlvo = new Date(ano, mes, dia);
+
+        // ==========================
+        // DIFERENÇA
+        // ==========================
+        const diferencaDias = Math.ceil(
+          (dataAlvo - hoje) / (1000 * 60 * 60 * 24)
+        );
+
+        // ==========================
+        // DEFINIR STATUS
+        // ==========================
+        if (diferencaDias < 0) {
+          statusEl.innerText = "VENCIDO";
+          statusEl.classList.add("vencido");
+        } else if (diferencaDias <= 7) {
+          statusEl.innerText = "VENCENDO";
+          statusEl.classList.add("vencendo");
+        } else {
+          statusEl.innerText = "EM DIA";
+          statusEl.classList.add("ok");
+        }
+
+      } catch (err) {
+        console.error(err);
+        document.body.innerHTML = "<h2 class='erro'>Erro ao carregar dados</h2>";
+      }
+    }
+
+    // ==========================
+    // ABRIR CHAMADO
+    // ==========================
+    async function enviarChamado(event) {
+      event.preventDefault();
+
+      if (!manutencaoAtual) {
+        mostrarMensagem("falha", "Carregue os dados do aparelho antes de enviar.");
+        return;
+      }
+
+      const empresaId = manutencaoAtual.empresa_id || manutencaoAtual.empresaId;
+      if (!empresaId) {
+        mostrarMensagem("falha", "Este aparelho não possui empresa vinculada.");
+        return;
+      }
+
+      const btn = document.getElementById("btnChamado");
+      btn.disabled = true;
+      btn.innerText = "Enviando...";
+
+      const chamado = {
+        manutencao_id: manutencaoAtual.id,
+        empresa_id: empresaId,
+        cliente: valorSeguro(manutencaoAtual.cliente),
+        equipamento: valorSeguro(manutencaoAtual.equipamento),
+        local: valorSeguro(manutencaoAtual.local),
+        solicitante: document.getElementById("solicitante").value.trim(),
+        telefone: document.getElementById("telefone").value.trim(),
+        descricao: document.getElementById("descricao").value.trim(),
+        status: "ABERTO"
+      };
+
+      try {
+        const resposta = await fetch(
+          `${SUPABASE_URL}/rest/v1/chamados`,
+          {
+            method: "POST",
+            headers: headersSupabase({
+              "Prefer": "return=minimal"
+            }),
+            body: JSON.stringify(chamado)
+          }
+        );
+
+        if (!resposta.ok) {
+          const erroTexto = await resposta.text();
+          console.error(erroTexto);
+          mostrarMensagem("falha", "Não foi possível enviar o chamado.");
+          return;
+        }
+
+        document.getElementById("formChamado").reset();
+        mostrarMensagem("sucesso", "Chamado enviado com sucesso. Em breve entraremos em contato.");
+
+      } catch (err) {
+        console.error(err);
+        mostrarMensagem("falha", "Erro ao enviar chamado.");
+      } finally {
+        btn.disabled = false;
+        btn.innerText = "Enviar chamado";
+      }
+    }
+
+    // ==========================
+    // INICIAR
+    // ==========================
+    document.getElementById("formChamado").addEventListener("submit", enviarChamado);
+    carregarDados();
+  </script>
+</body>
+</html>
