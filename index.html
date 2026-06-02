@@ -342,11 +342,14 @@
             const configs = await respConf.json();
             console.log("Resposta da config da empresa:", configs);
 
-            if (configs && configs.length > 0) {
+            if (configs && configs.length > 0 && configs[0].celular) {
               telefoneEmpresa = configs[0].celular;
               nomeEmpresa = configs[0].nome;
+              console.log("Telefone encontrado:", telefoneEmpresa);
+            } else {
+              console.warn("Empresa encontrada, mas campo 'celular' está vazio.");
             }
-          } catch (e) { console.error("Erro ao buscar contato:", e); }
+          } catch (e) { console.error("Erro na requisição da tabela empresas:", e); }
         }
 
         // ==========================
@@ -492,7 +495,7 @@
 
         document.getElementById("formChamado").reset();
 
-        if (telefoneEmpresa) {
+        if (telefoneEmpresa && telefoneEmpresa.trim() !== "") {
           mostrarMensagem("sucesso", "Chamado enviado! Redirecionando para o WhatsApp...");
           console.log("Iniciando redirecionamento. Telefone original:", telefoneEmpresa);
           
@@ -519,7 +522,7 @@
             window.location.href = urlWp;
           }, 1500);
         } else {
-          console.warn("Telefone da empresa não encontrado para redirecionamento.");
+          console.warn("Telefone da empresa não encontrado. empresa_id era:", empresaId);
           mostrarMensagem("sucesso", "Chamado enviado com sucesso. Em breve entraremos em contato.");
         }
 
