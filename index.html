@@ -19,24 +19,25 @@
     .container {
       max-width: 440px;
       margin: auto;
-      padding-top: 10px;
+      padding-top: 20px;
     }
 
     .card {
-      background: #FFFFFF;
+      background: #FFFFFF; /* -fx-bg-surface */
       padding: 24px;
       border-radius: 12px;
-      border: 1px solid #E5E7EB;
-      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+      border: 1px solid #E5E7EB; /* -fx-border-card */
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
       margin-bottom: 20px;
     }
 
     h2 {
       text-align: center;
       margin: 0 0 24px;
-      font-size: 22px;
+      font-size: 20px;
       font-weight: 800;
-      color: #0F172A;
+      color: #0F172A; /* -fx-text-main */
+      letter-spacing: -0.5px;
     }
 
     h3 {
@@ -51,13 +52,15 @@
       font-size: 15px;
       display: flex;
       justify-content: space-between;
-      border-bottom: 1px solid #F3F4F6;
+      border-bottom: 1px solid #F1F5F9;
       padding-bottom: 8px;
     }
 
     .label {
-      font-weight: 600;
-      color: #64748B;
+      font-weight: 700;
+      color: #64748B; /* -fx-text-muted */
+      font-size: 13px;
+      text-transform: uppercase;
     }
 
     .status {
@@ -66,15 +69,15 @@
     }
 
     .ok {
-      color: #10B981;
+      color: #10B981; /* -fx-success */
     }
 
     .vencido {
-      color: #EF4444;
+      color: #F43F5E; /* -fx-danger */
     }
 
     .vencendo {
-      color: #F59E0B;
+      color: #F59E0B; /* -fx-warning */
     }
 
     .erro {
@@ -89,23 +92,22 @@
 
     .form-group label {
       display: block;
-      color: #4B5563;
+      color: #4B5563; /* -fx-text-muted */
       font-size: 12px;
       font-weight: 700;
       margin-bottom: 6px;
       text-transform: uppercase;
-      letter-spacing: 0.025em;
     }
 
     input,
     textarea {
       width: 100%;
       box-sizing: border-box;
-      border: 1px solid #E5E7EB;
-      background: #F9FAFB;
+      border: 1px solid #E5E7EB; /* -fx-border-light */
+      background: #F9FAFB; /* -fx-bg-sidebar */
       color: #0F172A;
       border-radius: 8px;
-      padding: 12px 14px;
+      padding: 11px 14px;
       font-size: 14px;
       outline: none;
       transition: all 0.2s ease;
@@ -118,20 +120,25 @@
 
     input:focus,
     textarea:focus {
-      border-color: #38BDF8;
+      border-color: #818CF8; /* -fx-primary-border */
+      background: #FFFFFF;
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
     }
 
     button {
       width: 100%;
       border: none;
       border-radius: 8px;
-      background: #2563EB;
+      background: linear-gradient(to bottom, #818CF8, #6366F1); /* btn-primary */
       color: white;
-      padding: 12px;
-      font-size: 15px;
+      padding: 14px;
+      font-size: 14px;
       font-weight: bold;
       cursor: pointer;
+      transition: filter 0.2s;
     }
+    
+    button:hover { filter: brightness(1.08); }
 
     button:disabled {
       background: #475569;
@@ -328,7 +335,7 @@
         if (empId) {
           try {
             const respConf = await fetch(
-              `${SUPABASE_URL}/rest/v1/empresa?id=eq.${empId}&select=nome,celular&apikey=${API_KEY}`,
+              `${SUPABASE_URL}/rest/v1/empresas?id=eq.${empId}&select=nome,celular&apikey=${API_KEY}`,
               { headers: headersSupabase() }
             );
             
@@ -445,6 +452,12 @@
       btn.disabled = true;
       btn.innerText = "Enviando...";
 
+      // Ajuste de Fuso Horário: Converte a hora local para o formato ISO aceito pelo banco
+      // garantindo que o horário enviado seja o do dispositivo do usuário.
+      const agora = new Date();
+      const offset = agora.getTimezoneOffset() * 60000; // offset em milisegundos
+      const dataLocal = new Date(agora.getTime() - offset).toISOString();
+
       const chamado = {
         manutencao_id: manutencaoAtual.id,
         empresa_id: empresaId,
@@ -454,7 +467,8 @@
         solicitante: document.getElementById("solicitante").value.trim(),
         telefone: document.getElementById("telefone").value.trim(),
         descricao: document.getElementById("descricao").value.trim(),
-        status: "ABERTO"
+        status: "ABERTO",
+        data_abertura: dataLocal // Envia a data corrigida
       };
 
       try {
