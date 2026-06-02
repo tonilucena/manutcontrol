@@ -215,6 +215,7 @@
     const params = new URLSearchParams(window.location.search);
     const id = params.get("id");
     let manutencaoAtual = null;
+    let telefoneEmpresa = "";
 
     if (!id) {
       document.body.innerHTML = "<h2 class='erro'>ID não informado na URL</h2>";
@@ -296,6 +297,21 @@
         // ==========================
         const data = dados[0];
         manutencaoAtual = data;
+
+        // Buscar telefone da empresa para o WhatsApp
+        const empId = data.empresa_id || data.empresaId;
+        if (empId) {
+          try {
+            const respConf = await fetch(
+              `${SUPABASE_URL}/rest/v1/configuracoes?empresa_id=eq.${empId}&select=celular`,
+              { headers: headersSupabase() }
+            );
+            const configs = await respConf.json();
+            if (configs && configs.length > 0) {
+              telefoneEmpresa = configs[0].celular;
+            }
+          } catch (e) { console.error("Erro ao buscar contato:", e); }
+        }
 
         // ==========================
         // CAMPOS
@@ -432,7 +448,33 @@
         }
 
         document.getElementById("formChamado").reset();
-        mostrarMensagem("sucesso", "Chamado enviado com sucesso. Em breve entraremos em contato.");
+
+        if (telefoneEmpresa) {
+          mostrarMensagem("sucesso", "Chamado enviado! Redirecionando para o WhatsApp...");
+          
+          // Formata o número (remove tudo que não é dígito e garante o DDI 55)
+          let foneLimpo = telefoneEmpresa.replace(/\D/g, "");
+          if (foneLimpo.length > 0 && foneLimpo.length <= 11) {
+            foneLimpo = "55" + foneLimpo;
+          }
+
+          const textoWp = `*Novo Chamado Técnico*\n\n` +
+            `*Equipamento:* ${chamado.equipamento}\n` +
+            `*Local:* ${chamado.local}\n` +
+            `*Solicitante:* ${chamado.solicitante}\n` +
+            `*Problema:* ${chamado.descricao}`;
+
+          // Log para teste no console
+          const urlWp = `https://wa.me/${foneLimpo}?text=${encodeURIComponent(textoWp)}`;
+          console.log("URL do WhatsApp Gerada:", urlWp);
+
+          // Pequeno delay para o usuário ver o feedback de sucesso antes de sair da página
+          setTimeout(() => {
+            window.location.href = urlWp;
+          }, 1500);
+        } else {
+          mostrarMensagem("sucesso", "Chamado enviado com sucesso. Em breve entraremos em contato.");
+        }
 
       } catch (err) {
         console.error(err);
