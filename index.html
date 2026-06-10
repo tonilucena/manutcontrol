@@ -28,6 +28,10 @@
             scroll-behavior: smooth;
         }
 
+        html, body {
+            overflow-x: hidden;
+        }
+
         body {
             margin: 0;
             font-family: 'Inter', sans-serif;
@@ -629,6 +633,7 @@
         .cta-inner h2 {
             font-size: 42px;
             margin: 0 0 16px;
+            color: var(--white);
         }
 
         .cta-inner p {
@@ -655,18 +660,20 @@
                 left: 0;
                 right: 0;
                 bottom: 0;
-                background-color: #ffffff;
+                background: #ffffff !important;
                 flex-direction: column;
                 padding: 40px 24px;
                 gap: 24px;
                 transform: translateX(100%);
+                visibility: hidden;
                 transition: transform 0.3s ease;
                 display: flex;
-                z-index: 99;
+                z-index: 999;
                 box-shadow: -10px 0 30px rgba(0,0,0,0.15);
             }
             .nav-links.active {
                 transform: translateX(0);
+                visibility: visible;
             }
             .nav-links a {
                 font-size: 18px;
