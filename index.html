@@ -61,6 +61,10 @@
             border-bottom: 1px solid var(--line);
         }
 
+        .topbar.menu-open {
+            background: #ffffff !important;
+        }
+
         .nav {
             max-width: 1200px;
             margin: 0 auto;
@@ -628,7 +632,7 @@
         }
 
         .cta-inner p {
-            color: #94a3b8;
+            color: #cbd5e1;
             font-size: 18px;
             margin: 0 0 32px;
             line-height: 1.6;
@@ -638,7 +642,7 @@
             background: #0f172a;
             padding: 40px 24px;
             text-align: center;
-            color: #64748b;
+            color: #94a3b8;
             font-size: 14px;
             border-top: 1px solid #1e293b;
         }
@@ -651,7 +655,7 @@
                 left: 0;
                 right: 0;
                 bottom: 0;
-                background: var(--white);
+                background-color: #ffffff;
                 flex-direction: column;
                 padding: 40px 24px;
                 gap: 24px;
@@ -1040,9 +1044,11 @@
         // Mobile Menu Toggle
         const menuToggle = document.getElementById('menuToggle');
         const navLinks = document.querySelector('.nav-links');
+        const topbar = document.querySelector('.topbar');
 
         menuToggle.addEventListener('click', () => {
             navLinks.classList.toggle('active');
+            topbar.classList.toggle('menu-open');
             document.body.classList.toggle('mobile-menu-active');
             menuToggle.innerHTML = navLinks.classList.contains('active') ? '<i class="fa-solid fa-xmark"></i>' : '<i class="fa-solid fa-bars"></i>';
         });
