@@ -1,1 +1,555 @@
 
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Manutenção</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
+
+    body {
+      font-family: 'Inter', -apple-system, sans-serif;
+      background: #F9FAFB;
+      margin: 0;
+      padding: 20px;
+      color: #0F172A;
+      line-height: 1.5;
+    }
+
+    .container {
+      max-width: 440px;
+      margin: auto;
+      padding-top: 20px;
+    }
+
+    .card {
+      background: #FFFFFF; /* -fx-bg-surface */
+      padding: 24px;
+      border-radius: 12px;
+      border: 1px solid #E5E7EB; /* -fx-border-card */
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+      margin-bottom: 20px;
+    }
+
+    h2 {
+      text-align: center;
+      margin: 0 0 24px;
+      font-size: 20px;
+      font-weight: 800;
+      color: #0F172A; /* -fx-text-main */
+      letter-spacing: -0.5px;
+    }
+
+    h3 {
+      margin: 0 0 18px;
+      font-size: 18px;
+      font-weight: 700;
+      color: #1E293B;
+    }
+
+    .item {
+      margin: 12px 0;
+      font-size: 15px;
+      display: flex;
+      justify-content: space-between;
+      border-bottom: 1px solid #F1F5F9;
+      padding-bottom: 8px;
+    }
+
+    .label {
+      font-weight: 700;
+      color: #64748B; /* -fx-text-muted */
+      font-size: 13px;
+      text-transform: uppercase;
+    }
+
+    .status {
+      font-weight: bold;
+      font-size: 18px;
+    }
+
+    .ok {
+      color: #10B981; /* -fx-success */
+    }
+
+    .vencido {
+      color: #F43F5E; /* -fx-danger */
+    }
+
+    .vencendo {
+      color: #F59E0B; /* -fx-warning */
+    }
+
+    .erro {
+      text-align: center;
+      color: #EF4444;
+      font-size: 18px;
+    }
+
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    .form-group label {
+      display: block;
+      color: #4B5563; /* -fx-text-muted */
+      font-size: 12px;
+      font-weight: 700;
+      margin-bottom: 6px;
+      text-transform: uppercase;
+    }
+
+    input,
+    textarea {
+      width: 100%;
+      box-sizing: border-box;
+      border: 1px solid #E5E7EB; /* -fx-border-light */
+      background: #F9FAFB; /* -fx-bg-sidebar */
+      color: #0F172A;
+      border-radius: 8px;
+      padding: 11px 14px;
+      font-size: 14px;
+      outline: none;
+      transition: all 0.2s ease;
+    }
+
+    textarea {
+      min-height: 96px;
+      resize: vertical;
+    }
+
+    input:focus,
+    textarea:focus {
+      border-color: #818CF8; /* -fx-primary-border */
+      background: #FFFFFF;
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+    }
+
+    button {
+      width: 100%;
+      border: none;
+      border-radius: 8px;
+      background: linear-gradient(to bottom, #818CF8, #6366F1); /* btn-primary */
+      color: white;
+      padding: 14px;
+      font-size: 14px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: filter 0.2s;
+    }
+    
+    button:hover { filter: brightness(1.08); }
+
+    button:disabled {
+      background: #475569;
+      cursor: not-allowed;
+    }
+
+    .mensagem {
+      display: none;
+      border-radius: 8px;
+      padding: 14px;
+      margin-top: 16px;
+      font-size: 14px;
+      font-weight: 600;
+      border-width: 1px;
+      border-style: solid;
+    }
+    
+    .btn-whatsapp-opcional {
+      background: #25D366;
+      margin-top: 10px;
+      display: none;
+    }
+
+    .mensagem.sucesso {
+      display: block;
+      background: #ECFDF5;
+      color: #065F46;
+      border-color: #10B981;
+    }
+
+    .mensagem.falha {
+      display: block;
+      background: #FFF1F2;
+      color: #9F1239;
+      border-color: #F43F5E;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="card">
+      <h2>Status do Equipamento</h2>
+
+      <div class="item">
+        <span class="label">Cliente:</span>
+        <span id="cliente">...</span>
+      </div>
+
+      <div class="item" style="display: none;"> <span class="label">Equipamento:</span> <span id="equipamento">...</span> </div>
+
+      <div class="item">
+        <span class="label">Local:</span>
+        <span id="local">...</span>
+      </div>
+
+      <div class="item">
+        <span class="label">Última Manutenção:</span>
+        <span id="ultima">...</span>
+      </div>
+
+      <div class="item">
+        <span class="label">Próxima Manutenção:</span>
+        <span id="proxima">...</span>
+      </div>
+
+      <div class="item">
+        <span class="label">Status:</span>
+        <span id="status" class="status">...</span>
+      </div>
+    </div>
+
+    <div class="card" id="cardAcao" style="display:none;">
+      <div id="areaForm">
+        <h3>Abrir chamado técnico</h3>
+        <p style="font-size: 13px; color: #64748B; margin-bottom: 20px;">
+          Preencha os dados abaixo para registrar sua solicitação no sistema.
+        </p>
+        <form id="formChamado">
+        <div class="form-group">
+          <label for="solicitante">Seu nome</label>
+          <input id="solicitante" type="text" autocomplete="name" required>
+        </div>
+
+        <div class="form-group">
+          <label for="telefone">Telefone ou WhatsApp</label>
+          <input id="telefone" type="tel" autocomplete="tel" required>
+        </div>
+
+        <div class="form-group">
+          <label for="descricao">Descreva o problema</label>
+          <textarea id="descricao" required placeholder="Ex: equipamento não liga, vazamento, barulho..."></textarea>
+        </div>
+
+        <button id="btnChamado" type="submit">Enviar chamado</button>
+        </form>
+      </div>
+
+      <div id="areaSucesso" style="display: none; text-align: center; padding: 10px 0;">
+        <div style="font-size: 50px; margin-bottom: 10px;">✅</div>
+        <h3 style="margin-bottom: 10px;">Chamado Registrado!</h3>
+        <p style="font-size: 14px; color: #4B5563;">Nossa equipe já recebeu sua solicitação e entrará em contato em breve.</p>
+        <button onclick="location.reload()" style="background: #E5E7EB; color: #1E293B; margin-top: 20px;">Abrir novo chamado</button>
+        <a id="lnkWhatsapp" target="_blank" style="text-decoration: none;">
+          <button class="btn-whatsapp-opcional" id="btnWpOpcional">Avisar técnico via WhatsApp</button>
+        </a>
+      </div>
+      <div id="msgChamado" class="mensagem"></div>
+    </div>
+  </div>
+
+  <script>
+    // ==========================
+    // CONFIG
+    // ==========================
+    const SUPABASE_URL = "https://jwenrixwuqffhjllscei.supabase.co";
+    const API_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp3ZW5yaXh3dXFmZmhqbGxzY2VpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg5MTE2NDQsImV4cCI6MjA5NDQ4NzY0NH0.xtuQVhjwkJd8GBWQ_qBc-334C88kmeDcP9zcAar-Ir0";
+
+    // ==========================
+    // PEGAR ID DA URL
+    // ==========================
+    const params = new URLSearchParams(window.location.search);
+    const id = params.get("id");
+    let manutencaoAtual = null;
+    let telefoneEmpresa = "";
+    let nomeEmpresa = "";
+
+    if (!id) {
+      document.body.innerHTML = "<h2 class='erro'>ID não informado na URL</h2>";
+      throw new Error("ID não informado");
+    }
+
+    // ==========================
+    // FORMATAR DATA
+    // ==========================
+    function formatarData(dataISO) {
+      if (!dataISO) return "-";
+
+      try {
+        const dataLimpa = dataISO.split("T")[0];
+        const partes = dataLimpa.split("-");
+        if (partes.length !== 3) {
+          return dataISO;
+        }
+        return `${partes[2]}/${partes[1]}/${partes[0]}`;
+      } catch {
+        return dataISO;
+      }
+    }
+
+    function headersSupabase(extra = {}) {
+      return {
+        "apikey": API_KEY,
+        "Authorization": `Bearer ${API_KEY}`,
+        "Content-Type": "application/json",
+        ...extra
+      };
+    }
+
+    function mostrarMensagem(tipo, texto) {
+      const msg = document.getElementById("msgChamado");
+      msg.className = `mensagem ${tipo}`;
+      msg.innerText = texto;
+    }
+
+    function valorSeguro(valor) {
+      return valor || "-";
+    }
+
+    // ==========================
+    // BUSCAR DADOS
+    // ==========================
+    async function carregarDados() {
+      try {
+        const resposta = await fetch(
+          `${SUPABASE_URL}/rest/v1/manutencao?id=eq.${id}&select=*&apikey=${API_KEY}`,
+          {
+            headers: headersSupabase()
+          }
+        );
+
+        // ==========================
+        // ERRO HTTP
+        // ==========================
+        if (!resposta.ok) {
+          const erroTexto = await resposta.text();
+          console.error(erroTexto);
+          document.body.innerHTML = "<h2 class='erro'>Erro ao consultar Supabase</h2>";
+          return;
+        }
+
+        const dados = await resposta.json();
+        console.log("Dados recebidos:", dados);
+
+        // ==========================
+        // NÃO ENCONTROU
+        // ==========================
+        if (!dados || dados.length === 0) {
+          document.body.innerHTML = "<h2 class='erro'>Manutenção não encontrada</h2>";
+          return;
+        }
+
+        // ==========================
+        // PEGAR PRIMEIRO ITEM
+        // ==========================
+        const data = dados[0];
+        manutencaoAtual = data;
+
+        const empId = data.empresa_id || data.empresaId;
+        console.log("Equipamento carregado. Empresa ID:", empId);
+
+        if (empId) {
+          try {
+            const respConf = await fetch(
+              `${SUPABASE_URL}/rest/v1/empresas?id=eq.${empId}&select=nome,celular&apikey=${API_KEY}`,
+              { headers: headersSupabase() }
+            );
+            
+            const configs = await respConf.json();
+            console.log("Resposta da config da empresa:", configs);
+
+            if (configs && configs.length > 0 && configs[0].celular) {
+              telefoneEmpresa = configs[0].celular;
+              nomeEmpresa = configs[0].nome;
+              console.log("Telefone encontrado:", telefoneEmpresa);
+            } else {
+              console.warn("Empresa encontrada, mas campo 'celular' está vazio.");
+            }
+          } catch (e) { console.error("Erro na requisição da tabela empresas:", e); }
+        }
+
+        // ==========================
+        // CAMPOS
+        // ==========================
+        const cliente = data.cliente || "-";
+        const local = data.local || "-";
+        const equipamento = data.equipamento || "-";
+        const dataManutencao = data.data_manutencao || data.dataManutencao || "";
+        const proximaManutencao = data.proxima_manutencao || data.proximaManutencao || "";
+
+        // ==========================
+        // MOSTRAR NA TELA
+        // ==========================
+        document.getElementById("cliente").innerText = cliente;
+        document.getElementById("local").innerText = local;
+        document.getElementById("equipamento").innerText = equipamento;
+        document.getElementById("ultima").innerText = formatarData(dataManutencao);
+        document.getElementById("proxima").innerText = formatarData(proximaManutencao);
+        document.getElementById("cardAcao").style.display = "block";
+
+        // ==========================
+        // STATUS
+        // ==========================
+        const statusEl = document.getElementById("status");
+        statusEl.classList.remove("ok", "vencido", "vencendo");
+
+        // ==========================
+        // SEM DATA
+        // ==========================
+        if (!proximaManutencao) {
+          statusEl.innerText = (data.status || "PENDENTE").toUpperCase();
+          statusEl.classList.add("vencendo");
+          return;
+        }
+
+        // ==========================
+        // DATA ATUAL
+        // ==========================
+        const hoje = new Date();
+        hoje.setHours(0, 0, 0, 0);
+
+        // ==========================
+        // CONVERTER DATA
+        // ==========================
+        const partesData = proximaManutencao.split("T")[0].split("-");
+        if (partesData.length !== 3) {
+          statusEl.innerText = (data.status || "EM DIA").toUpperCase();
+          statusEl.classList.add("ok");
+          return;
+        }
+
+        const ano = parseInt(partesData[0]);
+        const mes = parseInt(partesData[1]) - 1;
+        const dia = parseInt(partesData[2]);
+        const dataAlvo = new Date(ano, mes, dia);
+
+        // ==========================
+        // DIFERENÇA
+        // ==========================
+        const diferencaDias = Math.ceil(
+          (dataAlvo - hoje) / (1000 * 60 * 60 * 24)
+        );
+
+        // ==========================
+        // DEFINIR STATUS
+        // ==========================
+        if (diferencaDias < 0) {
+          statusEl.innerText = "VENCIDO";
+          statusEl.classList.add("vencido");
+        } else if (diferencaDias <= 7) {
+          statusEl.innerText = "VENCENDO";
+          statusEl.classList.add("vencendo");
+        } else {
+          statusEl.innerText = "EM DIA";
+          statusEl.classList.add("ok");
+        }
+
+      } catch (err) {
+        console.error(err);
+        document.body.innerHTML = "<h2 class='erro'>Erro ao carregar dados</h2>";
+      }
+    }
+
+    // ==========================
+    // ABRIR CHAMADO
+    // ==========================
+    async function enviarChamado(event) {
+      event.preventDefault();
+
+      if (!manutencaoAtual) {
+        mostrarMensagem("falha", "Carregue os dados do aparelho antes de enviar.");
+        return;
+      }
+
+      const empresaId = manutencaoAtual.empresa_id || manutencaoAtual.empresaId;
+      if (!empresaId) {
+        mostrarMensagem("falha", "Este aparelho não possui empresa vinculada.");
+        return;
+      }
+
+      const btn = document.getElementById("btnChamado");
+      btn.disabled = true;
+      btn.innerText = "Enviando...";
+
+      // Captura a data/hora local corrigindo o fuso e remove o sufixo 'Z' (UTC)
+      // Isso garante que o chamado chegue com o horário de Brasília no seu sistema
+      const agora = new Date();
+      const offset = agora.getTimezoneOffset() * 60000; // offset em milisegundos
+      const dataLocal = new Date(agora.getTime() - offset).toISOString().slice(0, -1);
+      console.log("Data local calculada para envio:", dataLocal);
+
+      const chamado = {
+        manutencao_id: manutencaoAtual.id,
+        empresa_id: empresaId,
+        cliente: valorSeguro(manutencaoAtual.cliente),
+        equipamento: valorSeguro(manutencaoAtual.equipamento),
+        local: valorSeguro(manutencaoAtual.local),
+        solicitante: document.getElementById("solicitante").value.trim(),
+        telefone: document.getElementById("telefone").value.trim(),
+        descricao: document.getElementById("descricao").value.trim(),
+        status: "ABERTO",
+        data_abertura: dataLocal // Envia a data corrigida
+      };
+
+      try {
+        const resposta = await fetch(
+          `${SUPABASE_URL}/rest/v1/chamados?apikey=${API_KEY}`,
+          {
+            method: "POST",
+            headers: headersSupabase({
+              "Prefer": "return=minimal"
+            }),
+            body: JSON.stringify(chamado)
+          }
+        );
+
+        if (!resposta.ok) {
+          const erroTexto = await resposta.text();
+          console.error(erroTexto);
+          mostrarMensagem("falha", "Não foi possível enviar o chamado.");
+          return;
+        }
+
+        // Esconde o formulário e mostra a área de sucesso
+        document.getElementById("areaForm").style.display = "none";
+        document.getElementById("areaSucesso").style.display = "block";
+
+        if (telefoneEmpresa && telefoneEmpresa.trim() !== "") {
+          // Formata o número (remove tudo que não é dígito e garante o DDI 55)
+          let foneLimpo = telefoneEmpresa.replace(/\D/g, "");
+          if (foneLimpo.length === 10 || foneLimpo.length === 11) {
+            foneLimpo = "55" + foneLimpo;
+          }
+
+          const textoWp = `*Chamado Ref: ${manutencaoAtual.id}*\n` +
+            `*Para:* ${nomeEmpresa || "Suporte"}\n\n` +
+            `*Equipamento:* ${chamado.equipamento}\n` +
+            `*Solicitante:* ${chamado.solicitante}\n` +
+            `*Relato:* ${chamado.descricao}`;
+
+          const urlWp = `https://wa.me/${foneLimpo}?text=${encodeURIComponent(textoWp)}`;
+          
+          // Atualiza o link do botão opcional como backup (se o usuário quiser falar agora)
+          document.getElementById("lnkWhatsapp").href = urlWp;
+          document.getElementById("btnWpOpcional").style.display = "block";
+        }
+
+      } catch (err) {
+        console.error(err);
+        mostrarMensagem("falha", "Erro ao enviar chamado.");
+      } finally {
+        btn.disabled = false;
+        btn.innerText = "Enviar chamado";
+      }
+    }
+
+    // ==========================
+    // INICIAR
+    // ==========================
+    document.getElementById("formChamado").addEventListener("submit", enviarChamado);
+    carregarDados();
+  </script>
+</body>
+</html>
