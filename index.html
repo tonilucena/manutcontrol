@@ -67,6 +67,7 @@
 
         .topbar.menu-open {
             background: #ffffff !important;
+            backdrop-filter: none !important;
         }
 
         .nav {
@@ -139,16 +140,6 @@
 
         .mobile-menu-active {
             overflow: hidden;
-        }
-
-        main, footer {
-            transition: filter 0.3s ease;
-        }
-
-        .mobile-menu-active main,
-        .mobile-menu-active footer {
-            filter: blur(5px);
-            pointer-events: none;
         }
 
         .btn {
@@ -647,7 +638,7 @@
         }
 
         .cta-inner p {
-            color: #cbd5e1;
+            color: #f1f5f9;
             font-size: 18px;
             margin: 0 0 32px;
             line-height: 1.6;
@@ -657,7 +648,7 @@
             background: #0f172a;
             padding: 40px 24px;
             text-align: center;
-            color: #94a3b8;
+            color: #cbd5e1;
             font-size: 14px;
             border-top: 1px solid #1e293b;
         }
@@ -670,7 +661,7 @@
                 left: 0;
                 right: 0;
                 bottom: 0;
-                background-color: #ffffff !important;
+                background-color: #ffffff;
                 opacity: 1 !important;
                 flex-direction: column;
                 align-items: center;
