@@ -1064,11 +1064,22 @@
         const navLinks = document.querySelector('.nav-links');
         const topbar = document.querySelector('.topbar');
 
-        menuToggle.addEventListener('click', () => {
+        function toggleMenu() {
             navLinks.classList.toggle('active');
             topbar.classList.toggle('menu-open');
             document.body.classList.toggle('mobile-menu-active');
             menuToggle.innerHTML = navLinks.classList.contains('active') ? '<i class="fa-solid fa-xmark"></i>' : '<i class="fa-solid fa-bars"></i>';
+        }
+
+        menuToggle.addEventListener('click', toggleMenu);
+
+        // Fecha o menu automaticamente ao clicar em qualquer link (âncora)
+        document.querySelectorAll('.nav-links a').forEach(link => {
+            link.addEventListener('click', () => {
+                if (navLinks.classList.contains('active')) {
+                    toggleMenu();
+                }
+            });
         });
     </script>
 </body>
