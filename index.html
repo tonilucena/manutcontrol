@@ -141,6 +141,16 @@
             overflow: hidden;
         }
 
+        main, footer {
+            transition: filter 0.3s ease;
+        }
+
+        .mobile-menu-active main,
+        .mobile-menu-active footer {
+            filter: blur(5px);
+            pointer-events: none;
+        }
+
         .btn {
             display: inline-flex;
             align-items: center;
