@@ -633,7 +633,7 @@
         .cta-inner h2 {
             font-size: 42px;
             margin: 0 0 16px;
-            color: var(--white);
+            color: #ffffff !important;
         }
 
         .cta-inner p {
@@ -660,15 +660,18 @@
                 left: 0;
                 right: 0;
                 bottom: 0;
-                background: #ffffff !important;
+                background-color: #ffffff !important;
+                opacity: 1 !important;
                 flex-direction: column;
-                padding: 40px 24px;
-                gap: 24px;
+                align-items: center;
+                justify-content: flex-start;
+                padding: 60px 24px;
+                gap: 32px;
                 transform: translateX(100%);
                 visibility: hidden;
-                transition: transform 0.3s ease;
+                transition: transform 0.3s ease-in-out, visibility 0.3s;
                 display: flex;
-                z-index: 999;
+                z-index: 1000;
                 box-shadow: -10px 0 30px rgba(0,0,0,0.15);
             }
             .nav-links.active {
@@ -676,9 +679,15 @@
                 visibility: visible;
             }
             .nav-links a {
-                font-size: 18px;
+                font-size: 20px;
+                color: var(--ink) !important;
+                font-weight: 700;
+            }
+            .nav-links a.btn-primary {
+                color: var(--white) !important;
                 width: 100%;
-                text-align: center;
+                max-width: 280px;
+                justify-content: center;
             }
             .hero-inner { grid-template-columns: 1fr; padding: 60px 24px; text-align: center; }
             .hero-actions { justify-content: center; }
